@@ -1,8 +1,7 @@
-import Route from "./route.interface";
+import { FastifyInstance } from "fastify";
 
 interface Controller {
-  basePath: string;
-  routes: Route[];
+  register(app: FastifyInstance, prefix?: string): void;
 }
 
 export default Controller;

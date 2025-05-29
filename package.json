@@ -21,7 +21,9 @@
     "@fastify/bearer-auth": "^10.1.1",
     "@fastify/cors": "^11.0.1",
     "dotenv": "^16.5.0",
-    "fastify": "^5.3.3"
+    "fastify": "^5.3.3",
+    "sharp": "^0.34.2",
+    "zod": "^3.25.36"
   },
   "devDependencies": {
     "@types/node": "^22.15.24",

@@ -42,27 +42,45 @@ class App {
   	await this.app.register(bearerAuth, { keys: this.apiKeys });
   }
 
-  private async initializeControllers() {
-    const apiPath = path.join(__dirname, 'api');
-    const versions = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
+	private async initializeControllers() {
+		const apiPath = path.join(__dirname, 'api');
 
-    for (const version of versions) {
-      const versionPath = path.join(apiPath, version);
-      const files = fs.readdirSync(versionPath).filter(f => f.endsWith('.controller.ts') || f.endsWith('.controller.js'));
+		function getControllerFiles(dir: string): string[] {
+			let results: string[] = [];
+			const list = fs.readdirSync(dir);
 
-      for (const file of files) {
-        const controllerModule = await import(path.join(versionPath, file));
-        const ControllerClass = controllerModule.default;
-        if (!ControllerClass) continue;
-        const controller: Controller = new ControllerClass();
-        this.app.log.info(`Registering controller from ${version}/${file} on prefix /${version}${controller.basePath}`);
-		controller.routes.forEach(route => {
-			const fullPath = `/${version}${controller.basePath}${route.path || ''}`;
-			this.app[route.method](fullPath, route.handler);
-		});
-      }
-    }
-  }
+			list.forEach((file) => {
+			const filePath = path.join(dir, file);
+			const stat = fs.statSync(filePath);
+			if (stat && stat.isDirectory()) {
+				results = results.concat(getControllerFiles(filePath));
+			} else if (file.endsWith('.controller.ts') || file.endsWith('.controller.js')) {
+				results.push(filePath);
+			}
+			});
+
+			return results;
+		}
+
+		const controllerFiles = getControllerFiles(apiPath);
+
+		for (const filePath of controllerFiles) {
+			const relativePath = path.relative(apiPath, filePath);
+			const parts = relativePath.split(path.sep);
+			const version = parts.shift() || ''; // 'v1'
+			const controllerModule = await import(filePath);
+			const ControllerClass = controllerModule.default;
+			if (!ControllerClass) continue;
+
+			const controller: Controller = new ControllerClass();
+			if (!controller || !controller.register) {
+				this.app.log.warn(`Controller at ${filePath} is missing required methods or properties.`);
+				continue;
+			}
+			this.app.log.info(`Registering controller from ${relativePath}`);
+			controller.register(this.app, `/${version}`);
+		}
+	}
 }
 
 export default App;

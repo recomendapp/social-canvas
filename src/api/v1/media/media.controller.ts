@@ -44,7 +44,7 @@ class MediaCardController implements Controller {
 		const baseWidth = 1206;
 		const baseHeight = 2144;
 		const format = 2 / 3;
-		const padding = 50;
+		const padding = 100;
 		const POSTER_CONSTANTS = {
 			width: 600,
 			height: Math.floor(600 / format),

@@ -193,7 +193,6 @@ class MediaCardController implements Controller {
 					fit: 'cover',
 					position: 'center',
 				})
-				// .blur(20)
 				.composite([{
 					input: createColorOverlaySVG(baseWidth, baseHeight, 0.6),
 					blend: 'dest-in',

@@ -8,6 +8,7 @@ import fs from 'fs';
 class App {
   public app: FastifyInstance;
   public port: number = parseInt(process.env.PORT || '9000');
+  public host: string = process.env.HOST || '0.0.0.0';
   public apiKeys: Set<string> = new Set(process.env.API_KEYS?.split(',') || []);
 
   constructor() {
@@ -26,7 +27,7 @@ class App {
   }
 
   public listen() {
-    this.app.listen({ port: this.port }, (err, address) => {
+    this.app.listen({ port: this.port, host: this.host }, (err, address) => {
       if (err) {
         this.app.log.error(err);
         process.exit(1);

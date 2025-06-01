@@ -1,9 +1,9 @@
 const RECOMEND_CONSTANTS = {
 	logo: {
-		src: './src/assets/recomend/logo.svg',
+		src: './public/recomend/logo.svg',
 	},
 	icon: {
-		src: './src/assets/recomend/icon.svg',
+		src: './public/recomend/icon.svg',
 	}
 };
 

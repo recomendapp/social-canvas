@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch src src/index.ts",
+    "build": "esbuild src/index.ts --platform=node --outdir=build --bundle",
+    "start": "node build/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,11 +24,13 @@
     "@fastify/cors": "^11.0.1",
     "dotenv": "^16.5.0",
     "fastify": "^5.3.3",
+    "ioredis": "^5.6.1",
     "sharp": "^0.34.2",
     "zod": "^3.25.36"
   },
   "devDependencies": {
     "@types/node": "^22.15.24",
+    "esbuild": "^0.25.5",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

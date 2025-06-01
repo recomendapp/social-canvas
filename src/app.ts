@@ -12,7 +12,9 @@ class App {
 
   constructor() {
     this.app = Fastify({
-		logger: true,
+		logger: {
+			level: process.env.LOG_LEVEL || 'info',
+		},
 		ignoreDuplicateSlashes: true,
 		ignoreTrailingSlash: true,
 	});
@@ -39,7 +41,7 @@ class App {
 
   private async initializePlugins() {
     await this.app.register(cors);
-  	await this.app.register(bearerAuth, { keys: this.apiKeys });
+  	// await this.app.register(bearerAuth, { keys: this.apiKeys });
   }
 
 	private async initializeControllers() {

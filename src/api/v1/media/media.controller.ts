@@ -11,24 +11,24 @@ import RECOMEND_CONSTANTS from '../../../constants/recomend';
 class MediaCardController implements Controller {
 	register(app: FastifyInstance, prefix = ''): void {
 		const basePath = `${prefix}/media`;
-		app.get(`${basePath}/card`, {
+		app.post(`${basePath}/card`, {
 			schema: {
-				querystring: {
+				body: {
 					type: 'object',
 					properties: {
-						title: { type: 'string', description: 'Media Title' },
-						credits: { type: 'string', description: 'Media Credits' },
-						poster: { type: 'string', description: 'Media Poster URL' },
-						background: { type: 'string', description: 'Background Image URL' },
+						title: { type: 'string' },
+						credits: { type: 'string' },
+						poster: { type: 'string' },
+						background: { type: 'string' },
 					},
 					required: ['title', 'poster'],
-				}
+				},
 			}
 		}, this.card.bind(this));
 	}
 
 	async card(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-		const { title, credits, poster: posterUrl, background: backgroundUrl } = req.query as {
+		const { title, credits, poster: posterUrl, background: backgroundUrl } = req.body as {
 			title: string;
 			credits?: string;
 			poster: string;

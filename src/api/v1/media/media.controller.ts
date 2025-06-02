@@ -5,7 +5,6 @@ import path from 'path';
 import fs from 'fs';
 import { createRoundedCornerSVG } from '../../../lib/sharp/roundCorners';
 import { createColorOverlaySVG } from '../../../lib/sharp/colorOverlay';
-import { redis } from '../../../lib/redis';
 import RECOMEND_CONSTANTS from '../../../constants/recomend';
 
 class MediaCardController implements Controller {
@@ -34,11 +33,12 @@ class MediaCardController implements Controller {
 			poster: string;
 			background?: string;
 		};
+		const { redis } = req.server;
 		const cacheKey = `media-card:title=${title}&poster=${posterUrl}&credits=${credits || ''}&background=${backgroundUrl || ''}`;
 		const cacheDuration = 60 * 60 * 24; // 24 hours
 		const cached = await redis.get(cacheKey);
 		if (cached) {
-			return reply.type('image/png').send(Buffer.from(cached, 'base64'));
+			return reply.type('image/webp').send(Buffer.from(cached, 'base64'));
 		}
 		/* -------------------------------- CONSTANTS ------------------------------- */
 		const baseWidth = 1206;
@@ -227,7 +227,11 @@ class MediaCardController implements Controller {
 			.webp()
 			.toBuffer();
 	
-		await redis.set(cacheKey, imageBuffer.toString('base64'), 'EX', cacheDuration);
+		redis.set(cacheKey, imageBuffer.toString('base64'), 'EX', cacheDuration, (err) => {
+			if (err) {
+				console.error(`Failed to cache media card: ${err?.message || 'Unknown error'}`);
+			}
+		});
 		reply.type('image/webp').send(imageBuffer);
 	}
 }

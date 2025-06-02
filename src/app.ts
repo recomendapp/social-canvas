@@ -1,5 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import swagger from '@fastify/swagger';
+import swaggerUI from '@fastify/swagger-ui';
 import bearerAuth from '@fastify/bearer-auth';
 import Controller from './interfaces/controller.interface';
 import path from 'path';
@@ -42,6 +44,10 @@ class App {
 
   private async initializePlugins() {
     await this.app.register(cors);
+	await this.app.register(swagger)
+	await this.app.register(swaggerUI, {
+	  routePrefix: '/docs',
+	});
   	// await this.app.register(bearerAuth, { keys: this.apiKeys });
   }
 

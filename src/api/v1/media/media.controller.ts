@@ -74,8 +74,8 @@ class MediaCardController implements Controller {
 			create: {
 				width: baseWidth,
 				height: baseHeight,
-				channels: 4,
-				background: { r: 255, g: 255, b: 255, alpha: 0 }
+				channels: 3,
+				background: { r: 0, g: 0, b: 0 },
 			}
 		})
 
@@ -224,11 +224,11 @@ class MediaCardController implements Controller {
 
 		const imageBuffer = await image
 			.composite(layers)
-			.png()
+			.webp()
 			.toBuffer();
 	
 		await redis.set(cacheKey, imageBuffer.toString('base64'), 'EX', cacheDuration);
-		reply.type('image/png').send(imageBuffer);
+		reply.type('image/webp').send(imageBuffer);
 	}
 }
 

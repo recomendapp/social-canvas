@@ -4,6 +4,9 @@ const RECOMEND_CONSTANTS = {
 	},
 	icon: {
 		src: './public/recomend/icon.svg',
+	},
+	colors: {
+		accentYellow: '#FFEA75'
 	}
 };
 

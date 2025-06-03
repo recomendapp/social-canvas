@@ -7,7 +7,7 @@ type Radius =
       bl?: number;
     };
 
-export function createRoundedCornerSVG(width: number, height: number, radius: Radius): Buffer {
+export function createRoundedCornerSVG(width: number, height: number, radius: Radius, color = 'white'): Buffer {
   let tl = 0, tr = 0, br = 0, bl = 0;
 
   if (typeof radius === 'number') {
@@ -32,7 +32,7 @@ export function createRoundedCornerSVG(width: number, height: number, radius: Ra
            V ${tl}
            A ${tl},${tl} 0 0 1 ${tl},0
            Z"
-        fill="white"
+        fill="${color}"
       />
     </svg>
   `);

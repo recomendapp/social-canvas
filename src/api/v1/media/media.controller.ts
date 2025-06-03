@@ -6,6 +6,7 @@ import fs from 'fs';
 import { createRoundedCornerSVG } from '../../../lib/sharp/roundCorners';
 import { createColorOverlaySVG } from '../../../lib/sharp/colorOverlay';
 import RECOMEND_CONSTANTS from '../../../constants/recomend';
+import createRating from '../../../lib/sharp/rating';
 
 class MediaCardController implements Controller {
 	register(app: FastifyInstance, prefix = ''): void {
@@ -19,6 +20,7 @@ class MediaCardController implements Controller {
 						credits: { type: 'string' },
 						poster: { type: 'string' },
 						background: { type: 'string' },
+						voteAverage: { type: 'number', minimum: 0, maximum: 10 },
 					},
 					required: ['title', 'poster'],
 				},
@@ -27,14 +29,15 @@ class MediaCardController implements Controller {
 	}
 
 	async card(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-		const { title, credits, poster: posterUrl, background: backgroundUrl } = req.body as {
+		const { title, credits, poster: posterUrl, background: backgroundUrl, voteAverage } = req.body as {
 			title: string;
 			credits?: string;
 			poster: string;
 			background?: string;
+			voteAverage?: number;
 		};
 		const { redis } = req.server;
-		const cacheKey = `media-card:title=${title}&poster=${posterUrl}&credits=${credits || ''}&background=${backgroundUrl || ''}`;
+		const cacheKey = `media-card:title=${title}&poster=${posterUrl}&credits=${credits || ''}&background=${backgroundUrl || ''}&voteAverage=${voteAverage || ''}`;
 		const cacheDuration = 60 * 60 * 24; // 24 hours
 		const cached = await redis.get(cacheKey);
 		if (cached) {
@@ -64,6 +67,17 @@ class MediaCardController implements Controller {
 			color: 'white',
 			gapFromTitle: 30,
 			font: 'Arial',
+		}
+		const VOTE_AVERAGE_CONSTANTS = {
+			width: 80,
+			height: 50,
+			borderRadius: 20,
+			color: RECOMEND_CONSTANTS.colors.accentYellow,
+			backgroundColor: 'black',
+			borderWidth: 8,
+			padding: 20,
+			gapFromTop: 10,
+			gapFromRight: 10,
 		}
 		const APP_LOGO_CONSTANTS = {
 			width: 300,
@@ -102,6 +116,24 @@ class MediaCardController implements Controller {
 			.png()
 			.toBuffer();
 		const posterMeta = await sharp(posterLayer).metadata();
+		/* -------------------------------------------------------------------------- */
+
+		/* ------------------------------ Vote Average ------------------------------ */
+		let voteAverageLayer: Buffer | undefined;
+		let voteAverageMeta: sharp.Metadata | undefined;
+		if (voteAverage !== undefined) {
+			voteAverageLayer = await createRating({
+				rating: voteAverage,
+				color: VOTE_AVERAGE_CONSTANTS.color,
+				backgroundColor: VOTE_AVERAGE_CONSTANTS.backgroundColor,
+				width: VOTE_AVERAGE_CONSTANTS.width,
+				height: VOTE_AVERAGE_CONSTANTS.height,
+				padding: VOTE_AVERAGE_CONSTANTS.padding,
+				borderRadius: VOTE_AVERAGE_CONSTANTS.borderRadius,
+				borderWidth: VOTE_AVERAGE_CONSTANTS.borderWidth,
+			})
+			voteAverageMeta = await sharp(voteAverageLayer).metadata();
+		}
 		/* -------------------------------------------------------------------------- */
 		
 		/* ---------------------------------- Title --------------------------------- */
@@ -156,21 +188,33 @@ class MediaCardController implements Controller {
 				background: { r: 0, g: 0, b: 0, alpha: 0 },
 			},
 		});
+		// Poster
 		groupLayers.push({
 			input: posterLayer,
 			left: Math.floor((groupWidth - (posterMeta.width || 0)) / 2),
 			top: 0,
 		});
+		// Title
 		groupLayers.push({
 			input: titleLayer,
 			left: Math.floor((groupWidth - (titleMeta.width || 0)) / 2),
 			top: POSTER_CONSTANTS.height + TITLE_CONSTANTS.gapFromPoster,
 		});
+		// Credits
 		if (creditsLayer && creditsMeta) {
 			groupLayers.push({
 				input: creditsLayer,
 				left: Math.floor((groupWidth - (creditsMeta.width || 0)) / 2),
 				top: POSTER_CONSTANTS.height + TITLE_CONSTANTS.gapFromPoster + (titleMeta.height || 200) + CREDITS_CONSTANTS.gapFromTitle,
+			});
+		}
+		// Vote Average
+		if (voteAverageLayer && voteAverageMeta) {
+			groupLayers.push({
+				input: voteAverageLayer,
+				top: 0 + VOTE_AVERAGE_CONSTANTS.gapFromTop,
+				left: Math.floor((groupWidth - (posterMeta.width || 0)) / 2) + (posterMeta.width || 0) - (voteAverageMeta.width || 0) - VOTE_AVERAGE_CONSTANTS.gapFromRight,
+				blend: 'over',
 			});
 		}
 		const groupBuffer = await groupImage.composite(groupLayers).png().toBuffer();

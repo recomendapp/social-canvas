@@ -51,7 +51,7 @@ class App {
 	await this.app.register(swaggerUI, {
 	  routePrefix: '/docs',
 	});
-  	// await this.app.register(bearerAuth, { keys: this.apiKeys });
+  	await this.app.register(bearerAuth, { keys: this.apiKeys });
   }
 
 	private async initializeControllers() {

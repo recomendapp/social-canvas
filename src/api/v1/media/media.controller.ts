@@ -38,7 +38,7 @@ class MediaCardController implements Controller {
 		};
 		const { redis } = req.server;
 		const cacheKey = `media-card:title=${title}&poster=${posterUrl}&credits=${credits || ''}&background=${backgroundUrl || ''}&voteAverage=${voteAverage || ''}`;
-		const cacheDuration = 60 * 60 * 24; // 24 hours
+		const cacheDuration = 60 * 60 * 24 * 365; // 1 year
 		const cached = await redis.get(cacheKey);
 		if (cached) {
 			return reply.type('image/webp').send(Buffer.from(cached, 'base64'));
